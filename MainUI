@@ -1,5 +1,5 @@
---[[
-	Memito89 UI Library
+-[[
+	Memito UI Library
 	Pro of AI
 ]]
 
@@ -1021,5 +1021,3 @@ function Library:CreateWindow(cfg)
 	Window.Instance = BG
 	return Window
 end
-
-return Library
