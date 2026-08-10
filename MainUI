@@ -1021,3 +1021,4 @@ function Library:CreateWindow(cfg)
 	Window.Instance = BG
 	return Window
 end
+return library
