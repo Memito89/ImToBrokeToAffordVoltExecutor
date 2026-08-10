@@ -1,4 +1,4 @@
--[[
+--[[
 	Memito UI Library
 	Pro of AI
 ]]
@@ -43,11 +43,11 @@ local STROKE_T = 0.83 -- matches the TopBar stroke
 ----------------------------------------------------------------------
 local function create(class, props, children)
 	local inst = Instance.new(class)
-	for k, v in props do
+	for k, v in pairs(props) do
 		if k ~= "Parent" then inst[k] = v end
 	end
 	if children then
-		for _, c in children do c.Parent = inst end
+		for _, c in ipairs(children) do c.Parent = inst end
 	end
 	if props.Parent then inst.Parent = props.Parent end
 	return inst
@@ -487,7 +487,7 @@ function Library:CreateWindow(cfg)
 
 		local function select()
 			if Window._current == Tab then return end
-			for _, t in Window.Tabs do
+			for _, t in pairs(Window.Tabs) do
 				if t ~= Tab then t._wrap.Visible = false end
 				tween(t._btn, TI, { BackgroundTransparency = 1 })
 				tween(t._icon, TI, { TextColor3 = Theme.SubText })
@@ -555,8 +555,7 @@ function Library:CreateWindow(cfg)
 			local row = newRow(0)
 			row.AutomaticSize = Enum.AutomaticSize.Y
 			row.BackgroundColor3 = Color3.fromRGB(40, 34, 20)
-			for _, s in row:GetChildren() do if s:IsA("UIStroke") then s.Color = Theme.Warning; s.Transparency = 0.5 end end
-			-- equal top/bottom padding => single-line text sits centered against the icon
+			for _, s in pairs(row:GetChildren()) do if s:IsA("UIStroke") then s.Color = Theme.Warning; s.Transparency = 0.5 end end
 			create("UIPadding", {
 				PaddingTop = UDim.new(0, 9), PaddingBottom = UDim.new(0, 9),
 				PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10), Parent = row,
@@ -733,7 +732,6 @@ function Library:CreateWindow(cfg)
 				TextXAlignment = Enum.TextXAlignment.Left, AnchorPoint = Vector2.new(0, 0.5),
 				Position = UDim2.new(0, 10, 0.5, 0), Size = UDim2.new(0.4, -10, 1, 0), Parent = row,
 			})
-			-- wrapper hugs the textbox; textbox grows with text but is clamped so it can't overlap the label
 			local boxWrap = create("Frame", {
 				BackgroundColor3 = Theme.Secondary, AnchorPoint = Vector2.new(1, 0.5),
 				Position = UDim2.new(1, -8, 0.5, 0), Size = UDim2.new(0, 0, 0, 24),
@@ -769,7 +767,7 @@ function Library:CreateWindow(cfg)
 		end
 
 		------------------------------------------------------------
-		-- 8. Color Picker (inline HSV, expands the row)
+		-- 8. Color Picker
 		------------------------------------------------------------
 		function Tab:CreateColorPicker(ccfg)
 			ccfg = ccfg or {}
@@ -872,7 +870,7 @@ function Library:CreateWindow(cfg)
 		end
 
 		------------------------------------------------------------
-		-- 9. Dropdown (single or multi, inline expand)
+		-- 9. Dropdown
 		------------------------------------------------------------
 		function Tab:CreateDropdown(dcfg)
 			dcfg = dcfg or {}
@@ -881,7 +879,7 @@ function Library:CreateWindow(cfg)
 			local selected = {}
 			if dcfg.Default then
 				if type(dcfg.Default) == "table" then
-					for _, d in dcfg.Default do selected[d] = true end
+					for _, d in pairs(dcfg.Default) do selected[d] = true end
 				else selected[dcfg.Default] = true end
 			end
 
@@ -906,10 +904,11 @@ function Library:CreateWindow(cfg)
 			chev.Position = UDim2.new(1, -10, 0.5, 0)
 			chev.Parent = header
 
-			local list = create("Frame", {
+			local list = create("ScrollingFrame", {
 				BackgroundTransparency = 1, Position = UDim2.new(0, 0, 0, 36),
-				Size = UDim2.new(1, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y,
-				Visible = false, Parent = row,
+				Size = UDim2.new(1, 0, 0, 0), AutomaticCanvasSize = Enum.AutomaticSize.Y,
+				CanvasSize = UDim2.new(), ScrollBarThickness = 2,
+				ScrollBarImageColor3 = Theme.Stroke, Visible = false, Parent = row,
 			}, {
 				create("UIListLayout", { Padding = UDim.new(0, 2), SortOrder = Enum.SortOrder.LayoutOrder }),
 				create("UIPadding", { PaddingLeft = UDim.new(0,8), PaddingRight = UDim.new(0,8), PaddingBottom = UDim.new(0,8) }),
@@ -917,7 +916,7 @@ function Library:CreateWindow(cfg)
 
 			local function updateValLabel()
 				local picked = {}
-				for _, o in options do if selected[o] then table.insert(picked, o) end end
+				for _, o in pairs(options) do if selected[o] then table.insert(picked, o) end end
 				valLbl.Text = #picked == 0 and "None" or table.concat(picked, ", ")
 			end
 
@@ -925,9 +924,9 @@ function Library:CreateWindow(cfg)
 			local optionBtns = {}
 
 			local function rebuild()
-				for _, b in optionBtns do b.btn:Destroy() end
+				for _, b in pairs(optionBtns) do b.btn:Destroy() end
 				table.clear(optionBtns)
-				for i, opt in options do
+				for i, opt in ipairs(options) do
 					local ob = create("TextButton", {
 						Text = "", AutoButtonColor = false, BackgroundColor3 = Theme.Secondary,
 						Size = UDim2.new(1, 0, 0, 28), LayoutOrder = i, BorderSizePixel = 0, Parent = list,
@@ -953,7 +952,7 @@ function Library:CreateWindow(cfg)
 						else
 							table.clear(selected); selected[opt] = true
 						end
-						for _, b in optionBtns do
+						for _, b in pairs(optionBtns) do
 							local on = selected[b.opt] == true
 							b.check.Visible = on
 							tween(b.txt, TI, { TextColor3 = on and Theme.Accent or Theme.SubText })
@@ -962,7 +961,7 @@ function Library:CreateWindow(cfg)
 						if dcfg.Callback then
 							if multi then
 								local out = {}
-								for _, o in options do if selected[o] then table.insert(out, o) end end
+								for _, o in pairs(options) do if selected[o] then table.insert(out, o) end end
 								task.spawn(dcfg.Callback, out)
 							else
 								task.spawn(dcfg.Callback, opt)
@@ -981,14 +980,17 @@ function Library:CreateWindow(cfg)
 			local function openHeight()
 				local n = #options
 				if n == 0 then return 44 end
-				return 36 + (n * 28) + ((n - 1) * 2) + 8
+				local contentH = (n * 28) + ((n - 1) * 2) + 8
+				return 36 + math.min(contentH, 150)
 			end
 
 			local open = false
 			function api._toggle(force)
 				if force ~= nil then open = force else open = not open end
 				if open then list.Visible = true end
-				tween(row, TI_S, { Size = UDim2.new(1, 0, 0, open and openHeight() or 36) })
+				local targetH = open and openHeight() or 36
+				list.Size = UDim2.new(1, 0, 0, open and (targetH - 36) or 0)
+				tween(row, TI_S, { Size = UDim2.new(1, 0, 0, targetH) })
 				tween(chev, TI, { Rotation = open and 180 or 0 })
 				if not open then task.delay(0.12, function() if not open then list.Visible = false end end) end
 			end
@@ -1001,13 +1003,13 @@ function Library:CreateWindow(cfg)
 			end
 			function api:Set(val)
 				table.clear(selected)
-				if type(val) == "table" then for _, x in val do selected[x] = true end
+				if type(val) == "table" then for _, x in pairs(val) do selected[x] = true end
 				else selected[val] = true end
 				rebuild()
 			end
 			function api:Get()
 				local out = {}
-				for _, o in options do if selected[o] then table.insert(out, o) end end
+				for _, o in pairs(options) do if selected[o] then table.insert(out, o) end end
 				return multi and out or out[1]
 			end
 			api.Instance = row
@@ -1021,4 +1023,5 @@ function Library:CreateWindow(cfg)
 	Window.Instance = BG
 	return Window
 end
-return library
+
+return Library
