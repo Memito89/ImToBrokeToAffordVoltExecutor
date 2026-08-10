@@ -352,7 +352,7 @@ function Library:CreateWindow(cfg)
 	local YtBtn    = ctrlBtn("youtube", -74, Color3.fromRGB(255, 60, 60))
 	local DcBtn    = ctrlBtn("discord", -106, Color3.fromRGB(88, 101, 242))
 
-	local YT_LINK = "YOUTUBE COMING SOON!"
+	local YT_LINK = "https://www.youtube.com/@memito89"
 	local DC_LINK = "https://discord.gg/2G8A2hSZnh"
 	local DC_CODE = "2G8A2hSZnh"
 
